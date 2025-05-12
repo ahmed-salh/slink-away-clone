@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEditor.PackageManager.UI;
 using UnityEngine;
@@ -9,11 +10,15 @@ public class LevelEditor : EditorWindow
 
     private GameObject groundPrefab, obstaclePrefab, headWagonPrefab, trailWagonPrefab, wallPrefab;
 
-    private int width = 4, height = 4;
+    private int width = 5, height = 5;
 
     private static EditorWindow window;
 
     private Vector2 scrolPosition;
+
+
+
+ 
 
     [MenuItem("Slink Away/Level Editor")]
     public static void ShowWindow()
@@ -27,6 +32,8 @@ public class LevelEditor : EditorWindow
 
     void OnGUI()
     {
+
+
         EditorGUILayout.Space(5);
 
         GUILayout.Label("Prefabs", EditorStyles.boldLabel);
@@ -62,12 +69,17 @@ public class LevelEditor : EditorWindow
         EditorGUILayout.Space();
 
         LevelDesigner();
-
     }
 
 
     void LevelDesigner()
     {
+        GUIStyle gridBackgroundStyle = new GUIStyle(GUI.skin.box);
+
+        gridBackgroundStyle.padding = new RectOffset(12, 12, 12, 12);
+
+        gridBackgroundStyle.margin = new RectOffset(6, 6, 6, 6);
+
         GUILayout.Label("Level designer", EditorStyles.boldLabel);
 
         EditorGUILayout.Space();
@@ -92,38 +104,32 @@ public class LevelEditor : EditorWindow
 
         EditorGUILayout.Space();
 
-        GUIStyle gridBackgroundStyle = new GUIStyle(GUI.skin.box);
 
-        gridBackgroundStyle.padding = new RectOffset(12, 12, 12, 12);
-
-        gridBackgroundStyle.margin = new RectOffset(6, 6, 6, 6);
-
-        GUIStyle buttonStyle = new GUIStyle(GUI.skin.button);
-
-        buttonStyle.padding = new RectOffset(5, 5, 5, 5);
-
-        buttonStyle.margin = new RectOffset(0, 0, 0, 0);
 
         scrolPosition = EditorGUILayout.BeginScrollView(scrolPosition);
 
         EditorGUILayout.BeginVertical(gridBackgroundStyle);
 
-        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.BeginVertical();
 
-        for (int i = 0; i < width; i++)
+        for (int i = 0; i < height; i++)
         {
-            EditorGUILayout.BeginVertical();
+            EditorGUILayout.BeginHorizontal();
 
-            for (int j = 0; j < height; j++)
+            for (int j = 0; j < width; j++)
             {
-                GUILayout.Button("G", buttonStyle);
+                if (GUILayout.Button("G", GUILayout.Width(50), GUILayout.Height(50)))
+                {
+                    Debug.Log("Clicked on cell: " + i + ", " + j);
+                }
+                
 
             }
 
-            EditorGUILayout.EndVertical();
+            EditorGUILayout.EndHorizontal();
         }
 
-        EditorGUILayout.EndHorizontal();
+        EditorGUILayout.EndVertical();
 
         EditorGUILayout.EndVertical();
 
