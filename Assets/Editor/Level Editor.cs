@@ -124,7 +124,9 @@ public class LevelEditor : EditorWindow
 
             for (int j = 0; j < _width; j++)
             {
-                if (GUILayout.Button("G", GUILayout.Width(50), GUILayout.Height(50)))
+                string buttonName = gridCellTypes[i, j].ToString();
+
+                if (GUILayout.Button(buttonName, GUILayout.Width(70), GUILayout.Height(70)))
                 {
                     // Set the type
                     gridCellTypes[i, j] = _cellType;
