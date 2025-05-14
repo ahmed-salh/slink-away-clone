@@ -34,16 +34,13 @@ public class LevelEditor : EditorWindow
     private void OnEnable()
     {
         levelStyle = Resources.Load<LevelStyle>("Default Style");
-
-        gridCellTypes = new CellType[_width, _height];
-
     }
 
     void OnGUI()
     {
         // Initialize if value changed
-        if (gridCellTypes == null || gridCellTypes.GetLength(0) != _width || gridCellTypes.GetLength(1) != _height)
-            gridCellTypes = new CellType[_width, _height];
+        if (gridCellTypes == null || gridCellTypes.GetLength(1) != _width || gridCellTypes.GetLength(0) != _height)
+            gridCellTypes = new CellType[_height, _width];
 
         EditorGUILayout.Space(5);
 
@@ -52,22 +49,19 @@ public class LevelEditor : EditorWindow
 
         EditorGUILayout.Space();
 
-        // Grid size
-        LevelParameters();
-
-        EditorGUILayout.Space();
-
         // Draw the painting tool
         CustomPaintSection();
     }
 
-    void LevelParameters()
+    void GridObjects()
     {
-        GUILayout.Label("Level parameters", EditorStyles.boldLabel);
+        GUILayout.Label("Settings", EditorStyles.boldLabel);
 
-        EditorGUILayout.Space();
+        EditorGUILayout.Space(5);
 
-        GUILayout.Label("Size");
+        levelStyle = (LevelStyle)EditorGUILayout.ObjectField("Style:", levelStyle, typeof(LevelStyle), false);
+        
+        GUILayout.Label("Size:");
 
         EditorGUILayout.BeginHorizontal();
 
@@ -80,15 +74,6 @@ public class LevelEditor : EditorWindow
         _height = EditorGUILayout.IntField(_height, GUILayout.Width(50), GUILayout.ExpandWidth(true));
 
         EditorGUILayout.EndHorizontal();
-    }
-
-    void GridObjects()
-    {
-        GUILayout.Label("Prefabs", EditorStyles.boldLabel);
-
-        EditorGUILayout.Space(5);
-
-        levelStyle = (LevelStyle)EditorGUILayout.ObjectField("Style:", levelStyle, typeof(LevelStyle), false);
     }
 
     void CustomPaintSection()
@@ -105,11 +90,6 @@ public class LevelEditor : EditorWindow
 
         if (GUILayout.Button("Generate", GUILayout.Height(30)))
             createGridTiles(_cellType, Vector3.zero);
-        
-
-        GUILayout.Button("Load", GUILayout.Height(30));
-
-        GUILayout.Button("Clear", GUILayout.Height(30));
 
         EditorGUILayout.EndHorizontal();
 
@@ -278,4 +258,6 @@ public class LevelEditor : EditorWindow
                 return null;
         }
     }
+
 }
+
