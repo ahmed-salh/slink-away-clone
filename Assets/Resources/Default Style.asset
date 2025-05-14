@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca34583b7876b3243ba67273efed16db, type: 3}
+  m_Name: Default Style
+  m_EditorClassIdentifier: 
+  groundPrefab: {fileID: 3027225771803726904, guid: 72cbdfff2a3dc994784ec92e2d732262, type: 3}
+  obstaclePrefab: {fileID: 0}
+  wallSidePrefab: {fileID: 6393038980850464554, guid: fda4907e5299104468accde0e3e8705e, type: 3}
+  wallCornerPrefab: {fileID: 4566416283094177650, guid: bf3d5e0bd525ecb419d740eb914a5461, type: 3}
