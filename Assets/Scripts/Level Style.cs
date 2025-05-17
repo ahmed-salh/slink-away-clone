@@ -3,8 +3,10 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "SlinkAway", menuName = "New Style")]
 public class LevelStyle : ScriptableObject
 {
-    public GameObject groundPrefab;
-    public GameObject obstaclePrefab;
-    public GameObject wallSidePrefab;
-    public GameObject wallCornerPrefab;
+    public GameObject ground;
+    public GameObject obstacle;
+    public GameObject wallSide;
+    public GameObject wallCorner;
+    public GameObject wagonExit;
+    public GameObject stair;
 }

@@ -1,14 +1,21 @@
+﻿using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
 
 public class LevelEditor : EditorWindow
 {
-    private enum CellType { Ground, Empty, Obstacle, HeadWagon, TrailWagon }
+    private enum CellType { Ground, Obstacle, WagonExit}
+    private enum StairDirection { None,Top, Left, Down, Right}
 
     private CellType _cellType = CellType.Ground;
 
+    private StairDirection _stairDirection = StairDirection.None;
+
     private CellType[,] gridCellTypes;
+
+    private Vector2Int selectedCell = new Vector2Int(-1, -1);
 
     private Vector2 scrolPosition;
 
@@ -22,6 +29,7 @@ public class LevelEditor : EditorWindow
 
     private int _width = 5, _height = 5;
 
+    private bool isPaintMode;
 
     [MenuItem("Slink Away/Level Editor")]
     public static void CreateNewWindow()
@@ -34,14 +42,13 @@ public class LevelEditor : EditorWindow
     private void OnEnable()
     {
         levelStyle = Resources.Load<LevelStyle>("Default Style");
+
+        ResizeGrid(_height, _width);
     }
 
     void OnGUI()
     {
-        // Initialize if value changed
-        if (gridCellTypes == null || gridCellTypes.GetLength(1) != _width || gridCellTypes.GetLength(0) != _height)
-            gridCellTypes = new CellType[_height, _width];
-
+        // Insert space from above
         EditorGUILayout.Space(5);
 
         // Draw references for grid components
@@ -88,10 +95,66 @@ public class LevelEditor : EditorWindow
 
         EditorGUILayout.BeginHorizontal();
 
-        if (GUILayout.Button("Generate", GUILayout.Height(30)))
+        if (GUILayout.Button("Update", GUILayout.Height(30)))
+        {
+            ResizeGrid(_height, _width);
+
             createGridTiles(_cellType, Vector3.zero);
+        }
+
+        isPaintMode = GUILayout.Toggle(
+           isPaintMode,
+           new GUIContent(isPaintMode ? "Paint" : "Select"),
+           "Button",
+           GUILayout.Height(30)
+       );
+
 
         EditorGUILayout.EndHorizontal();
+
+        if (!isPaintMode) 
+        {
+            // Create the background
+            EditorGUILayout.BeginVertical(gridBackgroundStyle);
+
+            if (selectedCell == new Vector2Int(-1, -1))
+                EditorGUILayout.LabelField("Select a cell to change its type", EditorStyles.miniLabel);
+            else 
+            {
+                EditorGUILayout.LabelField("Cell: " + selectedCell);
+                EditorGUILayout.LabelField("Base Type: " + gridCellTypes[selectedCell.x, selectedCell.y].ToString());
+
+
+                bool isTop = selectedCell.x == 0;
+                bool isBottom = selectedCell.x == _height - 1 ;
+                bool isLeft = selectedCell.y == 0;
+                bool isRight = selectedCell.y == _width - 1;
+
+                if (isTop || isBottom || isLeft || isRight) 
+                {
+                   
+                    _stairDirection = (StairDirection)EditorGUILayout.EnumPopup("Has stairs: ", _stairDirection);
+
+                    EditorGUILayout.BeginHorizontal();
+                    EditorGUILayout.LabelField("Passenger queue: 0");
+                    EditorGUILayout.EndHorizontal();
+                    if (_stairDirection != StairDirection.None)
+                    {
+
+
+
+                        EditorGUILayout.ColorField(Color.white);
+
+                        if (GUILayout.Button("Enque")) 
+                        {
+                        }
+                    }
+                }
+            }
+
+            EditorGUILayout.EndVertical();
+
+        }
 
         EditorGUILayout.Space(1);
 
@@ -100,7 +163,6 @@ public class LevelEditor : EditorWindow
 
     void CreateGridGUI()
     {
-
         if (gridBackgroundStyle == null)
         {
             gridBackgroundStyle = new GUIStyle(GUI.skin.box);
@@ -110,6 +172,8 @@ public class LevelEditor : EditorWindow
             gridBackgroundStyle.margin = new RectOffset(4, 4, 4, 4);
         }
 
+        EditorGUILayout.LabelField("Level grid", EditorStyles.miniLabel);
+
         scrolPosition = EditorGUILayout.BeginScrollView(scrolPosition);
 
         // Create the background
@@ -118,24 +182,33 @@ public class LevelEditor : EditorWindow
         // Instantiate every row from left to right
         EditorGUILayout.BeginVertical();
 
-        for (int i = 0; i < _height; i++)
+        for (int i = 0; i < gridCellTypes.GetLength(0); i++)
         {
             EditorGUILayout.BeginHorizontal();
 
-            for (int j = 0; j < _width; j++)
+            for (int j = 0; j < gridCellTypes.GetLength(1); j++)
             {
                 string buttonName = gridCellTypes[i, j].ToString();
 
-                if (GUILayout.Button(buttonName, GUILayout.Width(70), GUILayout.Height(70)))
+
+                if (isPaintMode)
                 {
-                    // Set the type
-                    gridCellTypes[i, j] = _cellType;
-
-                    // TODO: change button style depending on type
-
-                    Debug.Log("Cell index is (" + i + ", " + j + ") Cell type : " + gridCellTypes[i, j]);
-
+                    if (GUILayout.Button(buttonName, GUILayout.Width(70), GUILayout.Height(70)))
+                    {
+                        // Set the type
+                        gridCellTypes[i, j] = _cellType;
+                    }
                 }
+                else
+                {
+                    bool selected = selectedCell == new Vector2(i, j);
+
+                    if (GUILayout.Toggle(selected, new GUIContent(isPaintMode ? buttonName : buttonName), "Button", GUILayout.Width(70), GUILayout.Height(70)))
+                    {
+                        selectedCell = new Vector2Int(i, j);
+                    }
+                }
+                
 
             }
 
@@ -160,9 +233,9 @@ public class LevelEditor : EditorWindow
 
         float wallWidth = 0.1f;
 
-        for (int i = -1; i <= _height; i++) // Note: start from -1 to _height for wall rows
+        for (int i = -1; i <= _height; i++) 
         {
-            for (int j = -1; j <= _width; j++) // Note: start from -1 to _width for wall columns
+            for (int j = -1; j <= _width; j++) 
             {
                 GameObject prefabToPlace;
 
@@ -177,28 +250,26 @@ public class LevelEditor : EditorWindow
                 // Choose based on cell type or wall creation
                 if (isCorner)
                 {
-                    prefabToPlace = levelStyle.wallCornerPrefab;
+                    prefabToPlace = levelStyle.wallCorner;
 
                 }
                 else if (isEdge)
                 {
-                    prefabToPlace = levelStyle.wallSidePrefab;
+                    prefabToPlace = levelStyle.wallSide;
                 }
                 else
                 {
                     prefabToPlace = GetPrefabFromType(gridCellTypes[i, j]);
                 }
 
-                if (prefabToPlace == null) continue;
-
-                // TODO: create new tiles
+                // Spawn position
                 Vector3 position = Vector3.zero;
 
                 // Convert grid indices to positions
-                if (prefabToPlace == levelStyle.wallCornerPrefab || prefabToPlace == levelStyle.wallSidePrefab)
+                if (prefabToPlace == levelStyle.wallCorner || prefabToPlace == levelStyle.wallSide)
                 {
                     // Rotate side walls
-                    if (prefabToPlace == levelStyle.wallSidePrefab)
+                    if (prefabToPlace == levelStyle.wallSide)
                     {
                         if (isTop) position = startPosition + new Vector3(j * cellSize , 0, -i * 0.5f * cellSize + wallWidth); 
                         if (isLeft) position = startPosition + new Vector3(j * 0.5f * cellSize - wallWidth, 0, -i  * cellSize);                         
@@ -207,7 +278,7 @@ public class LevelEditor : EditorWindow
                     }
 
                     // Rotate corner walls
-                    if (prefabToPlace == levelStyle.wallCornerPrefab)
+                    if (prefabToPlace == levelStyle.wallCorner)
                     {
                         if (isTop && isLeft) position = startPosition + new Vector3(j * 0.5f * cellSize - wallWidth, 0, -i * 0.5f * cellSize + wallWidth);
                         if (isTop && isRight) position = startPosition + new Vector3(j * cellSize - 0.5f * cellSize + wallWidth, 0, -i * 0.5f * cellSize + wallWidth);
@@ -227,12 +298,12 @@ public class LevelEditor : EditorWindow
                 newTile.transform.SetParent(gridOrigin.transform);
 
                 // Rotate side walls
-                if (prefabToPlace == levelStyle.wallSidePrefab)
+                if (prefabToPlace == levelStyle.wallSide)
                     if (isTop || isBottom) newTile.transform.rotation = Quaternion.Euler(0, 90, 0);
 
 
                 // Rotate corner walls
-                if (prefabToPlace == levelStyle.wallCornerPrefab)
+                if (prefabToPlace == levelStyle.wallCorner)
                 {
                     if (isTop && isRight) newTile.transform.rotation = Quaternion.Euler(0, 90, 0);
                     if (isBottom && isLeft) newTile.transform.rotation = Quaternion.Euler(0, -90, 0);
@@ -248,18 +319,45 @@ public class LevelEditor : EditorWindow
         switch (type)
         {
             case CellType.Ground:
-                return levelStyle.groundPrefab;
+                return levelStyle.ground;
             case CellType.Obstacle:
-                return levelStyle.obstaclePrefab;
-            case CellType.HeadWagon:
-                return levelStyle.groundPrefab; // Replace with correct prefab when available
-            case CellType.TrailWagon:
-                return levelStyle.groundPrefab; // Replace with correct prefab when available
-            case CellType.Empty:
+                return levelStyle.obstacle;
+            case CellType.WagonExit:
+                return levelStyle.wagonExit;
             default:
                 return null;
         }
     }
+
+    private void ResizeGrid(int newHeight, int newWidth)
+    {
+        // If its not initialized create new grid
+        if (gridCellTypes == null)
+        {
+            gridCellTypes = new CellType[newHeight, newWidth];
+            return;
+        }
+
+        int oldRows = gridCellTypes.GetLength(0);
+        int oldCols = gridCellTypes.GetLength(1);
+
+        // If not changed don't update size
+        if (oldRows == newHeight && oldCols == newWidth)
+            return;
+
+        var newGrid = new CellType[newHeight, newWidth];
+
+        // Only copy rows that exist in old grid but don't exceed new grid size
+        int copyRows = Math.Min(oldRows, newHeight);
+        int copyCols = Math.Min(oldCols, newWidth);
+
+        for (int r = 0; r < copyRows; r++)
+            for (int c = 0; c < copyCols; c++)
+                newGrid[r, c] = gridCellTypes[r, c];
+
+        gridCellTypes = newGrid;
+    }
+
 
 }
 
