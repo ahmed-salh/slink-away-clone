@@ -9,4 +9,5 @@ public class LevelStyle : ScriptableObject
     public GameObject wallCorner;
     public GameObject wagonExit;
     public GameObject stair;
+    public GameObject passenger;
 }

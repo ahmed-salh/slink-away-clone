@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -25,11 +26,17 @@ public class LevelEditor : EditorWindow
 
     private static EditorWindow window;
 
+    private Dictionary<Vector2Int, Queue<Passenger>> passengerQueues = new Dictionary<Vector2Int, Queue<Passenger>>();
+
     private GameObject gridOrigin;
 
     private int _width = 5, _height = 5;
 
-    private bool isPaintMode;
+    private bool isPaintMode = true;
+
+    private string newName = "";
+    private int newCount = 1;
+    private Color newColor = Color.white;
 
     [MenuItem("Slink Away/Level Editor")]
     public static void CreateNewWindow()
@@ -44,6 +51,12 @@ public class LevelEditor : EditorWindow
         levelStyle = Resources.Load<LevelStyle>("Default Style");
 
         ResizeGrid(_height, _width);
+
+
+        passengerQueues.Clear();
+        for (int r = 0; r < _height; r++)
+            for (int c = 0; c < _width; c++)
+                passengerQueues[new Vector2Int(r, c)] = new Queue<Passenger>();
     }
 
     void OnGUI()
@@ -135,19 +148,81 @@ public class LevelEditor : EditorWindow
                    
                     _stairDirection = (StairDirection)EditorGUILayout.EnumPopup("Has stairs: ", _stairDirection);
 
-                    EditorGUILayout.BeginHorizontal();
-                    EditorGUILayout.LabelField("Passenger queue: 0");
-                    EditorGUILayout.EndHorizontal();
+                    EditorGUILayout.BeginVertical(gridBackgroundStyle);
+                    var queue = passengerQueues[selectedCell];
+
+                    // group by Name+Color
+                    var groups = queue
+                        .GroupBy(p => new { p.Name, p.Color })
+                        .Select(g => new { Key = g.Key, Count = g.Count() })
+                        .ToList();
+                    EditorGUILayout.LabelField($"Passengers: {queue.Count}", EditorStyles.boldLabel);
+
+                    foreach (var group in groups)
+                    {
+                        EditorGUILayout.BeginVertical();
+
+                        // show class name and count
+                        EditorGUILayout.LabelField(
+                            $"{group.Key.Name} (x{group.Count})"
+                            
+                        );
+
+                        // show its color
+                        EditorGUILayout.ColorField(group.Key.Color);
+
+                        // remove entire class when clicked
+                        if (GUILayout.Button("Remove Class"))
+                        {
+                            // rebuild the queue without any passenger of this class
+                            var filtered = queue
+                                .Where(p => !(p.Name == group.Key.Name
+                                           && p.Color == group.Key.Color));
+                            passengerQueues[selectedCell] = new Queue<Passenger>(filtered);
+                            break; // exit the loop since the queue has changed
+                        }
+
+                        EditorGUILayout.EndVertical();
+                    }
+
+                    EditorGUILayout.EndVertical();
                     if (_stairDirection != StairDirection.None)
                     {
-
-
-
-                        EditorGUILayout.ColorField(Color.white);
-
-                        if (GUILayout.Button("Enque")) 
+ 
+                        // controls to enqueue
+                        EditorGUILayout.BeginHorizontal();
+                        EditorGUILayout.LabelField("Count: ", GUILayout.Width(40));
+                        newCount = EditorGUILayout.IntField(newCount);
+                        EditorGUILayout.LabelField("Name: ", GUILayout.Width(40));
+                        newName = EditorGUILayout.TextField(newName);
+                        EditorGUILayout.LabelField("Color: ", GUILayout.Width(40));
+                        newColor = EditorGUILayout.ColorField( newColor);
+                        if (GUILayout.Button("Enqueue", GUILayout.Height(20)))
                         {
+                            int existingPassengers = queue.Count;
+                            for (int i = 0; i < newCount; i++) 
+                            {
+
+
+                                queue.Enqueue(new Passenger(newName, newColor));
+
+                                GameObject newTile = (GameObject)PrefabUtility.InstantiatePrefab(levelStyle.passenger);
+
+                                Vector3 position = new Vector3(0, 0, 0);    
+
+                                if (isLeft)
+                                    position = new Vector3(selectedCell.y - existingPassengers - i - 1.5f , 0, -selectedCell.x);
+                                if (isRight)
+                                    position = new Vector3(selectedCell.y + existingPassengers + i + 1.5f, 0, -selectedCell.x);
+
+                                newTile.transform.position = position;
+
+                                newTile.transform.SetParent(gridOrigin.transform);
+                            }
+
+
                         }
+                        EditorGUILayout.EndHorizontal();
                     }
                 }
             }
@@ -356,8 +431,20 @@ public class LevelEditor : EditorWindow
                 newGrid[r, c] = gridCellTypes[r, c];
 
         gridCellTypes = newGrid;
+
     }
 
 
 }
 
+[Serializable]
+public class Passenger
+{
+    public string Name;
+    public Color Color;
+    public Passenger(string name, Color color)
+    {
+        Name = name;
+        Color = color;
+    }
+}
