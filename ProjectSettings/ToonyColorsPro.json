@@ -1,0 +1,15 @@
+{
+    "AutoNames": true,
+    "SubFolders": true,
+    "OverwriteConfig": false,
+    "LoadAllShaders": false,
+    "CustomOutputPath": "/JMO Assets/Toony Colors Pro/Shaders Generated/",
+    "LastImplementationExportImportPath": "D:/Projects/GitHub Projects/slink-away-clone/slink-away-clone/Assets",
+    "OpenedFoldouts": [],
+    "UseCustomFont": false,
+    "CustomFont": {
+        "instanceID": 0
+    },
+    "CustomFontInitialized": false,
+    "Upgrade_Hybrid1toHybrid2_Done": true
+}

@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca34583b7876b3243ba67273efed16db, type: 3}
+  m_Name: Default Style
+  m_EditorClassIdentifier: 
+  wallSide: {fileID: 6393038980850464554, guid: fda4907e5299104468accde0e3e8705e, type: 3}
+  wallCorner: {fileID: 4566416283094177650, guid: bf3d5e0bd525ecb419d740eb914a5461, type: 3}
+  ground: {fileID: 3027225771803726904, guid: 72cbdfff2a3dc994784ec92e2d732262, type: 3}
+  obstacle: {fileID: 2593506973172800031, guid: a23486236102da14b8cf642c69b2fcf1, type: 3}
+  wagonExit: {fileID: 2509341068751677749, guid: c308b0c7381c05d4893319f33eabfcb8, type: 3}
+  passage: {fileID: 182455431986744713, guid: 15d9dd85ce328554f84bf317243a9b5a, type: 3}
+  passenger: {fileID: 2891639043086645546, guid: badad276570317e43981f28f8296621a, type: 3}
+  wagonHead: {fileID: 959572074453593267, guid: c380db2660cf4834d8efe404074b8534, type: 3}
+  wagonMid: {fileID: 5693809900979829989, guid: 38178f1668388b044bf758620df0346e, type: 3}
+  wagonTail: {fileID: 7512957693931696586, guid: 9ef237871c6f07e4dbf01dffe38008e0, type: 3}
